@@ -553,11 +553,8 @@ async function init() {
       $(id).max = data.metadata.captured_at;
       $(id).addEventListener('change', render);
     }
-    const recent = addDays(latest, -27);
-    const showShoulderDates = shoulderDates.some(d => d >= recent && d <= latest);
-    const firstMarkedDate = showShoulderDates && shoulderDates.find(d => d >= earliest && d <= latest);
-    const initialStart = firstMarkedDate && firstMarkedDate < recent ? firstMarkedDate : recent;
-    $('start-date').value = initialStart > earliest ? initialStart : earliest;
+    const defaultStart = '2026-10-21';
+    $('start-date').value = defaultStart < earliest ? earliest : defaultStart > latest ? latest : defaultStart;
     $('end-date').value = latest;
 
     renderSplit();
