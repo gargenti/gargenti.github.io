@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calendario, split, progressione e note degli allenamenti Hevy.">
+  <meta name="color-scheme" content="light">
+  <title>Gym Dashboard</title>
+  <link rel="stylesheet" href="./vendor/lenis/lenis.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Vai al contenuto</a>
+<main id="main">
+  <div id="load-error" role="alert" hidden></div>
+  <section id="overview" class="page-section">
+    <div class="overview-intro">
+      <h1>I tuoi allenamenti, sotto controllo!</h1>
+    </div>
+    <div class="range-fields" role="group" aria-label="Periodo di analisi">
+      <label>Dal <input type="date" id="start-date"></label>
+      <label>Al <input type="date" id="end-date"></label>
+    </div>
+    <p id="range-status" role="status" hidden></p>
+    <article class="panel calendar-panel">
+      <div class="panel-head calendar-toolbar">
+        <div>
+          <h2 id="calendar-month" aria-live="polite">Calendario</h2>
+          <p id="calendar-count" class="chart-note"></p>
+        </div>
+        <div class="month-controls">
+          <button id="prev-month" class="button icon-button" type="button" aria-label="Mese precedente"><span aria-hidden="true">‹</span></button>
+          <button id="next-month" class="button icon-button" type="button" aria-label="Mese successivo"><span aria-hidden="true">›</span></button>
+        </div>
+      </div>
+      <div id="calendar" class="calendar" aria-labelledby="calendar-month"></div>
+      <p class="calendar-events chart-note">In rosso i giorni della piccola lussazione della spalla destra. Nei grafici settimanali il segno indica la settimana corrispondente.</p>
+    </article>
+    <div class="chart-grid overview-charts">
+      <article class="panel">
+        <div class="panel-head"><div><h2>Frequenza</h2><p id="frequency-summary" class="metric-summary"></p></div><span class="unit">Sedute / settimana</span></div>
+        <div id="frequency-chart" class="chart"></div>
+        <p class="chart-note">Settimane lun–dom. L’asterisco indica una settimana parziale.</p>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><h2>Tempo in palestra</h2><p id="duration-summary" class="metric-summary"></p></div><span class="unit">Minuti / seduta</span></div>
+        <div id="duration-chart" class="chart"></div>
+        <p class="chart-note">Durata dal timer Hevy, pause incluse.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="program" class="page-section">
+    <div class="section-heading"><h2>Split attuale</h2><p id="split-summary" class="section-copy"></p></div>
+    <div id="split-grid" class="split-grid"></div>
+  </section>
+
+  <section id="progress" class="page-section">
+    <div class="section-heading">
+      <h2>Progressione per esercizio</h2>
+      <label class="select-label" for="progress-routine">Giorno della split <select id="progress-routine"></select></label>
+    </div>
+    <p class="section-copy progress-copy">Ogni punto mostra la prima serie di lavoro della seduta. Nella panca manubri unilaterale e nel lento avanti monolaterale il grafico mostra la prima serie di ciascun braccio. Le serie dispari vanno al sinistro e le pari al destro. L’altezza indica il massimale stimato, o le ripetizioni per il corpo libero. Seleziona un punto per vedere le ripetizioni di ogni serie e il volume di carico, calcolato sommando kg × ripetizioni delle serie di lavoro.</p>
+    <details class="progress-method">
+      <summary>Come leggere il massimale stimato</summary>
+      <p>La formula di Epley usa carico × (1 + ripetizioni ÷ 30). Per una singola ripetizione si mostra il carico registrato. Il confronto è più indicativo con tecnica e sforzo simili. Leggi le stime da serie lunghe con più cautela.</p>
+    </details>
+    <div id="progress-grid" class="chart-grid"></div>
+  </section>
+  <section id="volume" class="page-section">
+    <div class="section-heading"><h2>Volume di lavoro</h2></div>
+    <article class="panel weekly-volume">
+      <div class="panel-head">
+        <div><h3>Serie di lavoro per settimana</h3><p id="work-volume-summary" class="metric-summary"></p></div>
+        <span class="unit">Serie equivalenti</span>
+      </div>
+      <div id="work-volume-chart" class="chart"></div>
+      <p class="chart-note">Riscaldamento escluso. Serie per lato normalizzate e dropset accorpati.</p>
+    </article>
+    <div class="volume-layout">
+      <article class="panel" aria-labelledby="plan-heading">
+        <div class="panel-head">
+          <div>
+            <h3 id="plan-heading">Volume settimanale previsto dalle tre schede</h3>
+            <p class="chart-note">Rotazione 2 + 1 + 1. Riscaldamento escluso, serie per lato normalizzate.</p>
+          </div>
+        </div>
+        <div class="volume-legend">
+          <span><i class="volume-direct" aria-hidden="true"></i>Serie dirette</span>
+          <span><i class="volume-indirect" aria-hidden="true"></i>Serie con lavoro indiretto stimato</span>
+          <span><i class="mev-tick" aria-hidden="true"></i>MEV della guida</span>
+        </div>
+        <ul id="plan-chart" class="volume-chart" role="list"></ul>
+        <div id="plan-event-dates"></div>
+        <p class="microcopy">La barra tratteggiata conta le serie degli esercizi in cui il muscolo ha un ruolo secondario. Il riferimento MEV riguarda le serie dirette svolte vicino al cedimento.</p>
+      </article>
+      <article class="panel science-note">
+        <h3>Come leggere il MEV</h3>
+        <p>Il MEV è il volume minimo efficace. I valori della guida sono <strong>landmark orientativi</strong>. Il tuo MEV personale non è misurato.</p>
+        <p>Un valore pari a zero nella guida tiene conto del lavoro indiretto. Un valore sotto il riferimento non dimostra che il volume sia insufficiente.</p>
+        <p>L’ACSM 2026 indica che volumi di circa 10 o più serie settimanali per muscolo possono favorire l’ipertrofia, senza stabilire un minimo universale.</p>
+        <a href="#sources" class="text-link">Fonti, limiti e conteggio</a>
+      </article>
+    </div>
+    <details id="volume-method" class="method-detail"><summary>Come vengono contate serie, lati, dropset e muscoli</summary><div class="method-content"><p>Le 6 registrazioni di panca monolaterale valgono 3 serie per lato (conferma utente); lo stesso vale per il secondo blocco di lento avanti (nota routine). Ogni registrazione pesa 0,5, quindi uno sforzo noto su un solo lato non viene attribuito all’altro.</p><p>Un dropset è accorpato alla serie precedente nello stesso esercizio; una sequenza iniziale di dropset conta come una serie estesa. Non esiste un’equivalenza ipertrofica esatta con serie tradizionali. Un tag dropset non prova il cedimento.</p><p>RPE esplicito ha priorità sul tag «failure». In assenza di RPE, «failure» è contato come dichiarazione di cedimento; gli altri set sono a sforzo ignoto. Non si trasferiscono le prescrizioni della routine allo storico delle sedute.</p><p>Conteggio diretto conservativo: panca/piegamenti → petto; tirate → schiena; press → deltoide anteriore; alzate → laterale; squat → quadricipiti; hip thrust → glutei; curl inverso → avambracci. Tricipiti nelle spinte, bicipiti e deltoide posteriore nelle tirate, glutei nello squat lavorano anche indirettamente: non sono inclusi nel totale diretto confrontato con la tabella della guida. Zero serie dirette non equivale a zero stimolo.</p></div></details>
+  </section>
+
+  <section id="journal" class="page-section">
+    <div class="section-heading">
+      <h2>Note di allenamento</h2>
+      <label class="checkbox-label"><input id="notes-only" type="checkbox" checked> Solo sedute con note</label>
+    </div>
+    <div id="journal-list" class="journal-grid"></div>
+  </section>
+<details id="sources" class="method-detail"><summary>Metodo e fonti</summary><div class="sources-grid"><article><h3>I tuoi dati</h3><p id="source-summary"></p><p>Rotazione confermata in chat il 10 novembre 2026. Le routine sono un’istantanea mutabile: lo storico non ricostruisce tutte le versioni precedenti del programma. Nessuna stima automatica di ipertrofia, stato clinico o peso corporeo.</p></article><article><h3>La guida</h3><p>Giulio Ramazio, <em>La Guida Scientifica Natural – Da 0 a 1000</em>, v2.0. <strong>02_TEORIA_ALLENAMENTO.md, «Volume», Tabella 2, PDF_PAGE: 71</strong>: landmark di Israetel per serie dirette vicine/al cedimento. <strong>03_FRAMEWORK_ALLENAMENTO.md, §1.4, PDF_PAGE: 101–102</strong>: partire conservativi e adattare in base alla risposta.</p><p>La tabella è attribuita alla guida: non è una misura del tuo fabbisogno. Non usiamo le sue categorie come semaforo automatico di crescita o sovrallenamento.</p></article><article><h3>Evidenze esterne</h3><p><a href="https://pubmed.ncbi.nlm.nih.gov/41843416/" target="_blank" rel="noreferrer">Currier et al., ACSM 2026</a><br>Overview di revisioni: maggior volume settimanale può migliorare l’ipertrofia. Il valore di 10 serie è un riferimento generale, non un MEV personale.</p><p><a href="https://pubmed.ncbi.nlm.nih.gov/38970765/" target="_blank" rel="noreferrer">Robinson et al., 2024</a><br>Meta-regressioni esplorative: maggiore vicinanza al cedimento associata a più ipertrofia; RIR stimati e relazione precisa incerta. Non convalida un confine rigido a RPE 7.</p><p class="microcopy">Fonti consultate il 10 novembre 2026. Applicazione personale: monitoraggio descrittivo, da discutere con il PT; nessuna modifica automatica delle schede.</p></article></div></details>
+
+  <footer>
+    <span id="snapshot-date"></span>
+    <button id="export-data" class="button" type="button">Esporta dati</button>
+  </footer>
+</main>
+<dialog data-lenis-prevent id="routine-dialog" class="routine-dialog" aria-labelledby="routine-dialog-title" aria-describedby="routine-dialog-meta">
+  <div class="dialog-heading">
+    <div><h2 id="routine-dialog-title"></h2><p id="routine-dialog-meta" class="section-copy"></p></div>
+    <form method="dialog"><button class="button" type="submit" autofocus>Chiudi</button></form>
+  </div>
+  <div id="routine-dialog-body" class="routine-dialog-body"></div>
+  <div class="routine-dialog-actions">
+    <a id="routine-dialog-progress" class="button" href="#progress">Vedi progressione</a>
+  </div>
+</dialog>
+<dialog data-lenis-prevent id="workout-dialog" aria-labelledby="workout-dialog-title">
+  <div class="dialog-heading">
+    <div><h2 id="workout-dialog-title"></h2><p id="workout-dialog-meta" class="section-copy"></p></div>
+    <form method="dialog"><button class="button" type="submit" autofocus>Chiudi</button></form>
+  </div>
+  <div id="workout-dialog-body"></div>
+</dialog>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
